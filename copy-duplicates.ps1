@@ -11,8 +11,6 @@ Datum           Author      Changes
 ---------------------------------------------------------------------
 02.12.2020      LichtiMi    Basisversion
 
-Copies all files with numbers in brackets "(n)" into the directory ".DOUBLE"
-
 #>
 
 # Variablendefinition
