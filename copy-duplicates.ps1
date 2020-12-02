@@ -40,7 +40,7 @@ $lfil_Filelist | ForEach-Object {
     [System.IO.FileInfo]$lfil_Destination = (Join-Path -Path $ls_currentdir"\"$ls_targetdir -ChildPath $_.FullName.Substring( $ls_currentdir.Length ) )
 
     #Write-Host -NoNewline $_.FullName " -> " $lfil_Destination.FullName
-    #Move-Item -WhatIf -Path $_.FullName -Destination $lfil_Destination.FullName
+    Move-Item -WhatIf -Path $_.FullName -Destination $lfil_Destination.FullName
 
     $i++
     [int]$li_percent = $i / $ll_numFiles * 100
