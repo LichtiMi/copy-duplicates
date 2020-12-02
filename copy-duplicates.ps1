@@ -15,18 +15,42 @@ Datum           Author      Changes
 
 # Variablendefinition
 #--------------------
-#$ls_targetdir="./.DOUBLE"
+$ls_targetdir=".DOUBLE"
+$ls_currentdir=[string](Get-Location)
+$i=0
 
+# Seite löschen
+#--------------
 Clear-Host
 
 # Zielverzeichnis anlegen
 #------------------------
-#New-Item -Path $ls_targetdir -ItemType Directory
+if(!(Test-Path -Path $ls_targetdir )){
+    New-Item -Path $ls_targetdir -ItemType Directory
+}
+
+#$Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '.*\([23456789]\)' })
+$lfil_Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '- Kopie' })
+$ll_numfiles = $lfil_Filelist.Count
 
 # Dateien verschieben
-Get-ChildItem | Where-Object { $_.FullName -match '.*\([23456789]\)' } | ForEach-Object { 
-#    Move-Item -Path $_.FullName -Destination .\.DOPPELTE\ 
+#Get-ChildItem -Recurse | Where-Object { $_.FullName -match '.*\([23456789]\)' } | ForEach-Object { 
+$lfil_Filelist | ForEach-Object { 
+
+    [System.IO.FileInfo]$lfil_Destination = (Join-Path -Path $ls_currentdir"\"$ls_targetdir -ChildPath $_.FullName.Substring( $ls_currentdir.Length ) )
+
+    #Write-Host -NoNewline $_.FullName " -> " $lfil_Destination.FullName
+    #Move-Item -WhatIf -Path $_.FullName -Destination $lfil_Destination.FullName
+
+    $i++
+    [int]$li_percent = $i / $ll_numFiles * 100
+
+    Write-Progress -Activity "Moving $_.FullName -> $lfil_Destination ($li_percent %)" -status $_  -PercentComplete $li_percent -verbose
+
 }
+
+Write-Host "Current directory: " $ls_currentdir
+Write-Host "Anzahl der Dateien: " $ll_numfiles
 
 <#
 $SourceFolder = "D:\queries\"
@@ -56,3 +80,4 @@ Write-Host 'Total number of files that was copied to '$targetFolder ' is ' $i
 Read-host -prompt "Press enter to complete..."
 clear-host;
 #>
+
