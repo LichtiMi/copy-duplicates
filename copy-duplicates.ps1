@@ -10,7 +10,8 @@ aller Unterverzeichnisse mit deren Struktur in das neu angelegte Verzeichnis ".D
 Datum           Author      Changes
 ---------------------------------------------------------------------
 02.12.2020      LichtiMi    Basisversion
-
+04.12.2020      LichtiMi    Kommentare einfügen
+                LichtiMi    Zielpfad anlegen falls er noch nicht existiert
 #>
 
 # Variablendefinition
@@ -29,55 +30,48 @@ if(!(Test-Path -Path $ls_targetdir )){
     New-Item -Path $ls_targetdir -ItemType Directory
 }
 
-#$Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '.*\([23456789]\)' })
+# Alle Dateien, die 'Kopie' im Dateinamen haben, ermitteln
+# Alternativ kann nach Dateien mit Zalhlen in der Klammer gesucht werden
+# '.*\([23456789]\)'
+#-----------------------------------------------------------------------
 $lfil_Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '- Kopie' })
+
+# Anzahl der Dateien ermitteln
+#-----------------------------
 $ll_numfiles = $lfil_Filelist.Count
 
 # Dateien verschieben
-#Get-ChildItem -Recurse | Where-Object { $_.FullName -match '.*\([23456789]\)' } | ForEach-Object { 
+#--------------------
 $lfil_Filelist | ForEach-Object { 
 
+    # Zielpfad für die Datei zusammenstellen
+    # Es wird '.DOUBLE' beim aktuellen Pfad eingefügt
+    #------------------------------------------------
     [System.IO.FileInfo]$lfil_Destination = (Join-Path -Path $ls_currentdir"\"$ls_targetdir -ChildPath $_.FullName.Substring( $ls_currentdir.Length ) )
 
-    #Write-Host -NoNewline $_.FullName " -> " $lfil_Destination.FullName
-    Move-Item -WhatIf -Path $_.FullName -Destination $lfil_Destination.FullName
+    # Zielpfad anlegen falls er noch nicht existiert
+    #-----------------------------------------------
+    if( !( Test-Path -Path $lfil_Destination.DirectoryName )) {
+        New-Item -Path $lfil_Destination.DirectoryName -ItemType Directory | Out-Null
+    }
 
+    # Datei verschieben
+    #------------------
+    #Move-Item -WhatIf -Path $_.FullName -Destination $lfil_Destination.FullName
+    Move-Item -Path $_.FullName -Destination $lfil_Destination.FullName 
+
+    # Fortschrittsprozentsatz ermitteln
+    #----------------------------------
     $i++
     [int]$li_percent = $i / $ll_numFiles * 100
 
+    # Fortschritt ausgeben
+    #---------------------
     Write-Progress -Activity "Moving $_.FullName -> $lfil_Destination ($li_percent %)" -status $_  -PercentComplete $li_percent -verbose
 
 }
 
-Write-Host "Current directory: " $ls_currentdir
-Write-Host "Anzahl der Dateien: " $ll_numfiles
-
-<#
-$SourceFolder = "D:\queries\"
-$targetFolder = "G:\queries\"
-$numFiles = (Get-ChildItem -Path $SourceFolder -Filter *.TXT).Count
-$i=0
-
-Clear-Host;
-
-Write-Host 'This script will copy ' $numFiles ' files from ' $SourceFolder ' to ' $targetFolder
-Read-host -prompt 'Press enter to start copying the files'
-
-Get-ChildItem -Path $SourceFolder -Filter *.TXT | ForEach-Object { 
-    [System.IO.FileInfo]$destination = (Join-Path -Path $targetFolder -ChildPath $_.Name.replace("_","\"))
-
-   if(!(Test-Path -Path $destination.Directory )){
-    New-item -Path $destination.Directory.FullName -ItemType Directory 
-    }
-    [int]$percent = $i / $numFiles * 100
-
-    copy-item -Path $_.FullName -Destination $Destination.FullName
-    Write-Progress -Activity "Copying ... ($percent %)" -status $_  -PercentComplete $percent -verbose
-    $i++
-}
-Write-Host 'Total number of files read from directory '$SourceFolder ' is ' $numFiles
-Write-Host 'Total number of files that was copied to '$targetFolder ' is ' $i
-Read-host -prompt "Press enter to complete..."
-clear-host;
-#>
-
+# Abschließend Aktuelles Verzeichnis und Anzahl der verschobenen Dateien ausgeben
+#--------------------------------------------------------------------------------
+Write-Host "Aktuelles Verzeichnis: " $ls_currentdir
+Write-Host "Anzahl der verschobenen Dateien: " $ll_numfiles
