@@ -34,7 +34,8 @@ if(!(Test-Path -Path $ls_targetdir )){
 # Alternativ kann nach Dateien mit Zalhlen in der Klammer gesucht werden
 # '.*\([23456789]\)'
 #-----------------------------------------------------------------------
-$lfil_Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '- Kopie' })
+#$lfil_Filelist = (Get-ChildItem -Recurse | Where-Object { $_.FullName -match '- Kopie' })
+$lfil_Filelist = (Get-ChildItem -Path ./* -Exclude .DOUBL* | Where-Object { $_.FullName -match '.*\([23456789]\)' })
 
 # Anzahl der Dateien ermitteln
 #-----------------------------
